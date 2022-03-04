@@ -1,0 +1,248 @@
+CREATE TABLE [dbo].[user](
+	[uid] [int] IDENTITY(1,1) NOT NULL,
+	[uname] [varchar](50) NULL,
+	[email] [varchar](50) NULL,
+	[password] [varchar](50) NULL,
+	[phoneno] [text] NULL,
+	[image] [text] NOT NULL,
+	[signature] [text] NOT NULL,
+	[aadhar] [text] NOT NULL,
+	[dob] [date] NOT NULL,
+	[postoffice] [varchar](50) NOT NULL,
+	[district] [varchar](50) NOT NULL,
+	[state] [varchar](50) NOT NULL,
+	[city] [varchar](50) NOT NULL,
+ CONSTRAINT [PK_user] PRIMARY KEY CLUSTERED 
+([uid] ASC)) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+------------------------------------------------------------------------------
+
+CREATE TABLE [dbo].[adminuser](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[name] [varchar](50) NOT NULL,
+	[email] [varchar](50) NOT NULL,
+	[password] [varchar](50) NOT NULL,
+	[city] [varchar](50) NOT NULL,
+	[state] [varchar](50) NOT NULL,
+	[organisationname] [text] NOT NULL,
+	[signature] [text] NOT NULL,
+	[usertype] [varchar](50) NOT NULL,
+ CONSTRAINT [PK_adminuser] PRIMARY KEY CLUSTERED 
+([id] ASC)) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+-------------------------------------------------
+
+CREATE TABLE [dbo].[disable_certificate](
+	[did] [int] IDENTITY(1,1) NOT NULL,
+	[uid] [int] NOT NULL,
+	[docid] [int] NULL,
+	[pid] [int] NULL,
+	[rid] [int] NULL,
+	[dtype] [varchar](50) NULL,
+	[dpercentage] [int] NULL,
+	[dproof] [text] NULL,
+	[is_active] [bit] NULL,
+	[rail_concession_status] [bit] NULL,
+	[needs_escort] [bit] NULL,
+ CONSTRAINT [PK_disable_certificate] PRIMARY KEY CLUSTERED 
+(
+	[did] ASC
+)) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[disable_certificate] ADD  CONSTRAINT [DF_disable_certificate_is_active]  DEFAULT ((0)) FOR [is_active]
+GO
+
+ALTER TABLE [dbo].[disable_certificate] ADD  CONSTRAINT [DF_disable_certificate_rail_concession_status]  DEFAULT ((0)) FOR [rail_concession_status]
+GO
+
+ALTER TABLE [dbo].[disable_certificate] ADD  CONSTRAINT [DF_disable_certificate_needs_escort]  DEFAULT ((0)) FOR [needs_escort]
+GO
+
+ALTER TABLE [dbo].[disable_certificate]  WITH CHECK ADD  CONSTRAINT [FK_disable_certificate_docID] FOREIGN KEY([docid])
+REFERENCES [dbo].[adminuser] ([id])
+GO
+
+ALTER TABLE [dbo].[disable_certificate] CHECK CONSTRAINT [FK_disable_certificate_docID]
+GO
+
+ALTER TABLE [dbo].[disable_certificate]  WITH CHECK ADD  CONSTRAINT [FK_disable_certificate_pID] FOREIGN KEY([pid])
+REFERENCES [dbo].[adminuser] ([id])
+GO
+
+ALTER TABLE [dbo].[disable_certificate] CHECK CONSTRAINT [FK_disable_certificate_pID]
+GO
+
+ALTER TABLE [dbo].[disable_certificate]  WITH CHECK ADD  CONSTRAINT [FK_disable_certificate_rID] FOREIGN KEY([rid])
+REFERENCES [dbo].[adminuser] ([id])
+GO
+
+ALTER TABLE [dbo].[disable_certificate] CHECK CONSTRAINT [FK_disable_certificate_rID]
+GO
+
+ALTER TABLE [dbo].[disable_certificate]  WITH CHECK ADD  CONSTRAINT [FK_disable_certificate_userID] FOREIGN KEY([uid])
+REFERENCES [dbo].[user] ([uid])
+GO
+
+ALTER TABLE [dbo].[disable_certificate] CHECK CONSTRAINT [FK_disable_certificate_userID]
+GO
+
+-----------------------------------------------------------------------------------------------------------------------
+
+CREATE TABLE [dbo].[request](
+	[reqid] [int] IDENTITY(1,1) NOT NULL,
+	[uid] [int] NOT NULL,
+	[docstatus] [bit] NOT NULL,
+	[pstatus] [bit] NOT NULL,
+	[rstatus] [bit] NOT NULL,
+ CONSTRAINT [PK_request] PRIMARY KEY CLUSTERED 
+([reqid] ASC)) ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[request] ADD  CONSTRAINT [DF_request_docstatus]  DEFAULT ((0)) FOR [docstatus]
+GO
+
+ALTER TABLE [dbo].[request] ADD  CONSTRAINT [DF_request_pstatus]  DEFAULT ((0)) FOR [pstatus]
+GO
+
+ALTER TABLE [dbo].[request] ADD  CONSTRAINT [DF_request_rstatus]  DEFAULT ((0)) FOR [rstatus]
+GO
+----------------------------------------------------------------------------------------------------------------------
+
+CREATE TABLE [dbo].[doctor_job_queue](
+	[docjob_id] [int] IDENTITY(1,1) NOT NULL,
+	[reqid] [int] NOT NULL,
+	[did] [int] NOT NULL,
+	[job_status] [bit] NOT NULL,
+ CONSTRAINT [PK_doctor_job_queue] PRIMARY KEY CLUSTERED 
+([docjob_id] ASC)) ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[doctor_job_queue] ADD  CONSTRAINT [DF_doctor_job_queue_job_status]  DEFAULT ((0)) FOR [job_status]
+GO
+
+ALTER TABLE [dbo].[doctor_job_queue]  WITH CHECK ADD  CONSTRAINT [FK_doctor_job_queue_dID] FOREIGN KEY([did])
+REFERENCES [dbo].[disable_certificate] ([did])
+GO
+
+ALTER TABLE [dbo].[doctor_job_queue] CHECK CONSTRAINT [FK_doctor_job_queue_dID]
+GO
+
+ALTER TABLE [dbo].[doctor_job_queue]  WITH CHECK ADD  CONSTRAINT [FK_doctor_job_queue_reqID] FOREIGN KEY([reqid])
+REFERENCES [dbo].[request] ([reqid])
+GO
+
+ALTER TABLE [dbo].[doctor_job_queue] CHECK CONSTRAINT [FK_doctor_job_queue_reqID]
+GO
+-------------------------------------------------------------------------------------------------------------------
+
+CREATE TABLE [dbo].[police_job_queue](
+	[pjob_id] [int] IDENTITY(1,1) NOT NULL,
+	[reqid] [int] NOT NULL,
+	[did] [int] NOT NULL,
+	[job_status] [bit] NOT NULL,
+ CONSTRAINT [PK_police_job_queue] PRIMARY KEY CLUSTERED 
+([pjob_id] ASC)) ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[police_job_queue] ADD  CONSTRAINT [DF_police_job_queue_job_status]  DEFAULT ((0)) FOR [job_status]
+GO
+
+ALTER TABLE [dbo].[police_job_queue]  WITH CHECK ADD  CONSTRAINT [FK_police_job_queue_dID] FOREIGN KEY([did])
+REFERENCES [dbo].[disable_certificate] ([did])
+GO
+
+ALTER TABLE [dbo].[police_job_queue] CHECK CONSTRAINT [FK_police_job_queue_dID]
+GO
+
+ALTER TABLE [dbo].[police_job_queue]  WITH CHECK ADD  CONSTRAINT [FK_police_job_queue_reqID] FOREIGN KEY([reqid])
+REFERENCES [dbo].[request] ([reqid])
+GO
+
+ALTER TABLE [dbo].[police_job_queue] CHECK CONSTRAINT [FK_police_job_queue_reqID]
+GO
+
+--------------------------------------------------------------------------------------------------------------------------------
+CREATE TABLE [dbo].[railway_job_queue](
+	[rjob_id] [int] IDENTITY(1,1) NOT NULL,
+	[reqid] [int] NULL,
+	[did] [int] NULL,
+	[job_status] [bit] NULL,
+ CONSTRAINT [PK_railway_job_queue] PRIMARY KEY CLUSTERED 
+([rjob_id] ASC)) ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[railway_job_queue] ADD  CONSTRAINT [DF_railway_job_queue_job_status]  DEFAULT ((0)) FOR [job_status]
+GO
+
+ALTER TABLE [dbo].[railway_job_queue]  WITH CHECK ADD  CONSTRAINT [FK_railway_job_queue_dID] FOREIGN KEY([did])
+REFERENCES [dbo].[disable_certificate] ([did])
+GO
+
+ALTER TABLE [dbo].[railway_job_queue] CHECK CONSTRAINT [FK_railway_job_queue_dID]
+GO
+
+ALTER TABLE [dbo].[railway_job_queue]  WITH CHECK ADD  CONSTRAINT [FK_railway_job_queue_reqid] FOREIGN KEY([reqid])
+REFERENCES [dbo].[request] ([reqid])
+GO
+
+ALTER TABLE [dbo].[railway_job_queue] CHECK CONSTRAINT [FK_railway_job_queue_reqid]
+GO
+----------------------------------------------------------------------------------------------------------------------------
+View: 
+
+CREATE VIEW [Certificate Verified Users] AS 
+
+Select u.uname,u.phoneno,u.city,u.dob,d.dtype,d.dpercentage from
+ disable_certificate d,[user] u where is_active = 1 and d.uid = u.uid; 
+
+ 
+
+SELECT * FROM [Certificate Verified Users]; 
+
+----------------------------------------------------------------------------------- 
+
+Procedure: 
+
+CREATE OR ALTER PROCEDURE create_disbality_certificate 
+
+  
+
+@uid int  
+
+as 
+
+Select uid from [user] where uid = @uid; 
+
+Insert into disable_certificate(uid) values(@uid); 
+
+GO 
+
+  
+
+EXEC create_disbality_certificate @uid = 1; 
+
+------------------------------------------------------------------------------------------------- 
+
+Function: 
+
+CREATE OR ALTER FUNCTION doctor_verified(@uid int)  
+
+RETURNS INT 
+
+AS 
+
+BEGIN 
+
+DECLARE @status INT; 
+
+SELECT @status = COUNT(r.uid) from request r, doctor_job_queue d where r.reqid = d.reqid 
+	and r.docstatus = 1 
+	and r.uid = @uid 
+	and d.job_status = 1;
+
+RETURN @status; 
+
+END; 
+
+  
+
+print dbo.doctor_verified(4); 
